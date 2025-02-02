@@ -1,3 +1,7 @@
+----- create schema -----
+CREATE SCHEMA egor;
+
+
 ----- measurment_type table -----
 CREATE TABLE egor.measurment_type(
 	id INTEGER NOT NULL PRIMARY KEY,
