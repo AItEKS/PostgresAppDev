@@ -95,7 +95,7 @@ VALUES (2, 2, 100, 12, 34, 0, 0.2, 45);
 
 ----- constant_params_1 table -----
 CREATE TABLE IF NOT EXISTS egor.constant_params_1 (
-	temperature INTEGER,
+	temperature NUMERIC(4,2),
 	delta NUMERIC(4,2)
 );
 
@@ -113,11 +113,11 @@ INSERT INTO egor.constant_params_1 (temperature, delta) VALUES (40, 4.5);
 ----- interpolation_params -----
 CREATE TYPE egor.interpolation_params AS
 (
-	x0 numeric(4,2),
-	x1 numeric(4,2),
-	y0 numeric(4,2),
-	y1 numeric(4,2),
-	x numeric(4,2)
+	x0 NUMERIC(4,2),
+	x1 NUMERIC(4,2),
+	y0 NUMERIC(4,2),
+	y1 NUMERIC(4,2),
+	x NUMERIC(4,2)
 );
 
 ALTER TYPE egor.interpolation_params
