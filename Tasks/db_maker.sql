@@ -169,6 +169,45 @@ BEGIN
 	END IF;
 
 
+	----- constant_params_2 table -----
+    IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'egor' AND tablename = 'constant_params_2') THEN
+		CREATE SEQUENCE IF NOT EXISTS egor.constant_params_2_seq START 1 INCREMENT BY 1;
+		
+		CREATE TABLE egor.constant_params_2 (
+		    id INTEGER NOT NULL DEFAULT nextval('egor.constant_params_2_seq'::regclass),
+		    height INTEGER NOT NULL,
+		    is_positive BOOLEAN NOT NULL,
+		    const_values INTEGER[] NOT NULL
+        );
+
+        INSERT INTO egor.constant_params_2 (height, is_positive, const_values) 
+		VALUES (200, FALSE, ARRAY[-1, -2, -3, -4, -5, -6, -7, -8, -9, -20, -29, -39, -49]), 
+				(200, TRUE , ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(400, FALSE, ARRAY[-1, -2, -3, -4, -5, -6, -6, -7, -8, -9, -19, -29, -38, -48]),
+				(400, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]), 
+				(800, FALSE, ARRAY[-1, -2, -3, -4, -5, -6, -6, -7, -7, -8, -18, -28, -37, -46]),
+				(800, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(1200, FALSE, ARRAY[-1, -2, -3, -4, -4, -5, -5, -6, -7, -8, -17, -26, -35, -44]),
+				(1200, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(1600, FALSE, ARRAY[-1, -2, -3, -3, -4, -4, -5, -6, -7, -7, -17, -25, -34, -42]),
+				(1600, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(2000, FALSE, ARRAY[-1, -2, -3, -3, -4, -4, -5, -6, -6, -7, -16, -24, -32, -40]),
+				(2000, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(2400, FALSE, ARRAY[-1, -2, -2, -3, -4, -4, -5, -5, -6, -7, -15, -23, -31, -38]),
+				(2400, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(3000, FALSE, ARRAY[-1, -2, -2, -3, -4, -4, -4, -5, -5, -6, -15, -22, -30, -37]),
+				(3000, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]),
+				(4000, FALSE, ARRAY[-1, -2, -2, -3, -4, -4, -4, -4, -5, -6, -14, -20, -27, -34]),
+				(4000, TRUE, ARRAY[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30]);
+
+        RAISE NOTICE 'Table "constant_params_2" created.';
+		
+    ELSE
+        RAISE NOTICE 'Table "constant_params_2" already exists.';
+    
+	END IF;
+	
+
 	----- interpolation_params -----
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interpolation_params') THEN
         CREATE TYPE egor.interpolation_params AS
@@ -226,7 +265,17 @@ BEGIN
 	  	INTO var_max_temperature, var_min_temperature
 	  	FROM egor.constant_params_1;
 	
-
+		IF var_temperature >= var_max_temperature AND var_temperature <= (SELECT max_value FROM egor.measure_settings WHERE const_name = 'temperature') THEN
+			var_interpolation :=  (SELECT MAX(delta) FROM egor.constant_params_1);
+			RAISE NOTICE 'max';
+			RETURN var_interpolation;
+		END IF;
+		
+		IF var_temperature <= var_min_temperature AND var_temperature >= (SELECT min_value FROM egor.measure_settings WHERE const_name = 'temperature') THEN
+			var_interpolation :=  (SELECT MIN(delta) FROM egor.constant_params_1);
+			RETURN var_interpolation;
+		END IF;
+		
 		IF var_max_temperature IS NULL OR var_min_temperature IS NULL THEN
 	    	RAISE EXCEPTION 'Table "constant_params_1" is empty, cannot perform interpolation.';
 	 	END IF;
@@ -269,23 +318,27 @@ BEGIN
 		in_params egor.input_params;
 	
 	BEGIN
+		IF in_height IS NULL THEN
+			RAISE EXCEPTION 'Height value is out of range!';
+		END IF;
+	
 		IF in_temperature < (SELECT min_value FROM egor.measure_settings WHERE const_name = 'temperature') OR 
-		in_temperature > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'temperature') THEN
+		in_temperature > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'temperature') OR in_temperature IS NULL THEN
 			RAISE EXCEPTION 'Temperature value is out of range!';
 		END IF;
 	
 		IF in_pressure < (SELECT min_value FROM egor.measure_settings WHERE const_name = 'pressure') OR 
-		in_pressure > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'pressure') THEN
+		in_pressure > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'pressure') OR in_pressure IS NULL THEN
 			RAISE EXCEPTION 'Pressure value is out of range!';
 		END IF;
 		
 		IF in_wind_direction < (SELECT min_value FROM egor.measure_settings WHERE const_name = 'wind_direction') OR 
-		in_wind_direction > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'wind_direction') THEN
+		in_wind_direction > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'wind_direction')  OR in_wind_direction IS NULL THEN
 			RAISE EXCEPTION 'Wind_direction value is out of range!';
 		END IF;
 		
 		IF in_bullet_speed < (SELECT min_value FROM egor.measure_settings WHERE const_name = 'bullet_speed') OR 
-		in_bullet_speed > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'bullet_speed') THEN
+		in_bullet_speed > (SELECT max_value FROM egor.measure_settings WHERE const_name = 'bullet_speed') OR in_bullet_speed IS NULL THEN
 			RAISE EXCEPTION 'Bullet_speed value is out of range!';
 		END IF;
 		
@@ -317,8 +370,8 @@ BEGIN
 	    OWNER TO admin;
 
 
-	----- fn_calculate_meteo_average() -----
-	CREATE OR REPLACE FUNCTION egor.fn_calculate_meteo_average(
+	----- fn_calculate_meteo_approximate() -----
+	CREATE OR REPLACE FUNCTION egor.fn_calculate_meteo_approximate(
 	in_params egor.input_params)
     RETURNS text[]
     LANGUAGE 'plpgsql'
@@ -385,8 +438,64 @@ BEGIN
 	END;
 	$BODY$;
 	
-	ALTER FUNCTION egor.fn_calculate_meteo_average(egor.input_params)
+	ALTER FUNCTION egor.fn_calculate_meteo_approximate(egor.input_params)
 	    OWNER TO admin;
+
+
+---------- procedures ----------
+
+
+	------ pd_get_avg_air_deviation() ------
+	CREATE OR REPLACE PROCEDURE egor.pd_get_avg_air_deviation(
+	    var_temperature NUMERIC(4, 2),
+	    OUT result_array INTEGER[]
+	)
+	LANGUAGE 'plpgsql'
+	AS $BODY$
+	DECLARE
+	    var_interpolation INTEGER := ROUND(egor.fn_calculate_interpolation(var_temperature));
+	    approximate_temperature INTEGER := ROUND(var_interpolation + var_temperature - (SELECT min_value FROM egor.measure_settings WHERE const_name = 'T'))::INTEGER;
+	    dozens INTEGER := (approximate_temperature / 10)::INTEGER;
+	    units INTEGER := MOD(approximate_temperature, 10);
+	
+	    element_h INTEGER;
+	    current_result NUMERIC;
+	    array_index INTEGER := 1;
+	    array_length INTEGER := (SELECT COUNT(DISTINCT height) FROM egor.constant_params_2);
+	
+	BEGIN
+	    result_array := ARRAY[NULL::NUMERIC];
+	    result_array := array_fill(NULL::NUMERIC, ARRAY[array_length]);
+	    
+	    FOR element_h IN SELECT DISTINCT height FROM egor.constant_params_2 ORDER BY height LOOP
+	        IF dozens = 0 THEN
+	            IF approximate_temperature < 0 THEN
+	                current_result := (SELECT const_values[ABS(units)] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=FALSE) + 50;
+	            ELSE
+	                current_result := (SELECT const_values[units] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=TRUE);
+	            END IF;
+	
+	        ELSIF units = 0 THEN
+	            IF approximate_temperature < 0 THEN
+	                current_result := (SELECT const_values[10+dozens] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=FALSE) + 50;
+	            ELSE
+	                current_result := (SELECT const_values[10+dozens] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=TRUE);
+	            END IF;
+	
+	        ELSIF dozens < 0 THEN
+	            current_result := ((SELECT const_values[ABS(units)] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=FALSE) +
+	                                 (SELECT const_values[ABS(dozens)] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=FALSE));
+	
+	        ELSE
+	            current_result := ((SELECT const_values[units] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=TRUE) +
+	                                 (SELECT const_values[dozens] FROM egor.constant_params_2 WHERE height=element_h AND is_positive=TRUE));
+	        END IF;
+	
+	        result_array[array_index] := current_result;
+	        array_index := array_index + 1;
+	    END LOOP;
+	END;
+	$BODY$;
 
 	
 END $$;
