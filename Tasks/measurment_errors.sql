@@ -17,5 +17,4 @@ GROUP BY
     t3.last_name,
     t4.position_name
 ORDER BY
-    t3.first_name,
-    t3.last_name;
+    error_measurement_count DESC;
