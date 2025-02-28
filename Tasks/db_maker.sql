@@ -354,6 +354,31 @@ BEGIN
 	$BODY$;
 
 
+
+	----- fn_has_error() -----
+	CREATE OR REPLACE FUNCTION egor.fn_has_error(in_height NUMERIC(8, 2), in_temperature NUMERIC(8, 2), 
+													 in_pressure NUMERIC(8, 2), in_wind_direction NUMERIC(8, 2), 
+													 in_bullet_speed NUMERIC(8, 2))
+	RETURNS BOOLEAN
+	LANGUAGE 'plpgsql'
+	COST 100
+	VOLATILE PARALLEL UNSAFE
+	AS $BODY$
+	DECLARE
+	    input_params egor.input_params;
+	BEGIN
+	    BEGIN
+	        input_params := egor.fn_get_input_params(in_height, in_temperature, in_pressure, in_wind_direction, in_bullet_speed);
+	        RETURN FALSE;
+	    EXCEPTION
+	        WHEN OTHERS THEN
+	            RAISE NOTICE 'Exception caught!';
+	            RETURN TRUE;
+	    END;
+	END;
+	$BODY$;
+	
+	
 	------ fn_get_date() ------
 	CREATE OR REPLACE FUNCTION egor.fn_get_date()
     RETURNS text
