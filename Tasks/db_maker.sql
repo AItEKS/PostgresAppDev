@@ -354,7 +354,6 @@ BEGIN
 	$BODY$;
 
 
-
 	----- fn_has_error() -----
 	CREATE OR REPLACE FUNCTION egor.fn_has_error(in_height NUMERIC(8, 2), in_temperature NUMERIC(8, 2), 
 													 in_pressure NUMERIC(8, 2), in_wind_direction NUMERIC(8, 2), 
