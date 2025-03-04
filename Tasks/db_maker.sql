@@ -128,16 +128,6 @@ BEGIN
 	            REFERENCES egor.measurment_batch (measurment_batch_id)
 	    );
 
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_measurment_type_id ON egor.measurment_params (measurment_type_id);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_measurment_batch_id ON egor.measurment_params (measurment_batch_id);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_height ON egor.measurment_params (height);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_temperature ON egor.measurment_params (temperature);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_pressure ON egor.measurment_params (pressure);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_wind_speed ON egor.measurment_params (wind_speed);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_wind_direction ON egor.measurment_params (wind_direction);
-		CREATE INDEX IF NOT EXISTS idx_measurment_params_bullet_speed ON egor.measurment_params (bullet_speed);
-
-
     	RAISE NOTICE 'Table "measurment_params" created.';
 	
 	ELSE
@@ -232,7 +222,7 @@ BEGIN
 	END IF;
 
 
-	-- Создание таблицы height_alphay
+	----- height_alphay table -----
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'egor' AND tablename = 'height_alphay') THEN
 		CREATE TABLE egor.height_alphay (
 			height INTEGER NOT NULL PRIMARY KEY,
@@ -256,7 +246,7 @@ BEGIN
 		RAISE NOTICE 'Table "height_alphay" already exists.';
 	END IF;
 
-	-- Создание таблицы constant_params_3_dmk
+	----- constant_params_3_dmk -----
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'egor' AND tablename = 'constant_params_3_dmk') THEN
 		CREATE SEQUENCE IF NOT EXISTS egor.constant_params_3_dmk_seq START 1 INCREMENT BY 1;
 
@@ -286,7 +276,7 @@ BEGIN
 		RAISE NOTICE 'Table "constant_params_3_dmk" already exists.';
 	END IF;
 
-	-- Создание таблицы constant_params_3_bp
+	----- constant_params_3_bp -----
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'egor' AND tablename = 'constant_params_3_bp') THEN
 		CREATE SEQUENCE IF NOT EXISTS egor.constant_params_3_bp_seq START 1 INCREMENT BY 1;
 
