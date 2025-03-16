@@ -1,3 +1,4 @@
+-- Создание функции триггера
 CREATE OR REPLACE FUNCTION public.fn_tr_temp_input_params()
     RETURNS trigger
     LANGUAGE 'plpgsql'
@@ -50,3 +51,37 @@ begin
 	return NEW;
 end;
 $BODY$;
+
+-- Создание триггера
+CREATE TRIGGER tr_temp_input_params
+BEFORE INSERT ON temp_input_params
+FOR EACH ROW
+EXECUTE FUNCTION fn_tr_temp_input_params();
+
+-- Пример вставки данных
+INSERT INTO temp_input_params (
+    emploee_name,
+    measurment_type_id,
+    height,
+    temperature,
+    pressure,
+    wind_direction,
+    wind_speed,
+    bullet_demolition_range,
+    measurment_input_params_id,
+    error_message,
+    calc_result
+)
+VALUES (
+    'Иванов Иван Иванович',
+    1,
+    10.50,
+    15.00,
+    1013.25,
+    270.00,
+    5.00,
+    500.00,
+    1,
+    NULL,
+    '{}'::jsonb
+);
