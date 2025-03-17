@@ -11,6 +11,8 @@ declare
 	var_response jsonb;
 	var_calc_result public.calc_result_type[];
 	var_header jsonb;
+	var_user_id integer;
+	var_meas_input_params_id integer;
 begin
 
 	-- Проверяем параметры
@@ -27,6 +29,17 @@ begin
 		raise notice 'error %',  var_check_result.error_message;
 		NEW.error_message := var_check_result.error_message;
 		return NEW;
+	else
+		INSERT INTO public.employees (name, birthday, military_rank_id) 
+    	VALUES (NEW.emploee_name, '2025-02-15', 1)
+    	RETURNING id INTO var_user_id;
+
+		INSERT INTO public.measurment_input_params (measurment_type_id, height, temperature, pressure, wind_direction, wind_speed, bullet_demolition_range) 
+    	VALUES (NEW.measurment_type_id, NEW.height, NEW.temperature, NEW.pressure, NEW.wind_direction, NEW.wind_speed, NEW.bullet_demolition_range)
+    	RETURNING id INTO var_meas_input_params_id;
+
+		INSERT INTO public.measurment_baths (emploee_id, measurment_input_param_id, started)
+		VALUES (var_user_id, var_meas_input_params_id, NOW());
 	
 	end if;
 
